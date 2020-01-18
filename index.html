@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+    <head></head>
+    <body>
+        <div class='container'></div>
+    </body>
+    <style>
+        .container {
+            background: white; 
+            /* overflow: hidden; */
+        }
+
+        .box1 {
+            margin-top: 20px;
+            width: 20%;
+            margin-right: 5%;
+            height: 100px;
+            background: blue;
+            float: left;
+            text-align: center;
+            line-height: 100px;
+            font-size: 50px;
+        }
+
+        .container::after {
+            content: '';
+            clear: both;
+            display: block;
+            height: 0;
+        }
+    </style>
+
+    <script>
+
+        // just for demo, provide some ideal, for apple delete app animate
+        // 1.use opacity to hide remove (not remove immediately) and will change boxes
+        // 2.according to will change boxes, create animate boxes, which only use for animation, always remove at last
+        // 3.remove delete elements and animate boxes,change other boxes opacity to 1 
+
+        const container = document.getElementsByClassName('container')[0];
+
+        // total box number
+        window.total = 23;
+        const divs = [];
+
+        // create demo boxes
+        for(let i=0; i < window.total; i++) {
+            const div = document.createElement('div');
+            div.className='box1';
+            div.innerText=i;
+            container.appendChild(div);
+            divs.push(div);
+            div.addEventListener('click', () => {
+                changeIndex(div);
+            })
+        }
+
+        // click remove box
+        function changeIndex(removeDom) {
+            // set position not w8 remove
+            removeDom.style.opacity = 0
+
+            // find rest dom element
+            const index = divs.indexOf(removeDom)
+            const rest = divs.slice(index+1, window.total)
+
+            //  no animate just delete
+            if (!rest.length) {
+                divs.splice(window.total,1);
+                container.removeChild(removeDom);
+                window.total--;
+                return;
+            }
+            
+            // hide reset box
+            rest.forEach(r => r.style.opacity = 0)
+
+            // first line rest number
+            const lineRest = (4 - (window.total - rest.length) % 4) % 4;
+
+            // we change the delete boxes into three group
+            // first group is same line with delete box, may be 0
+            // second is vertial line boxs, these will be move left to right, may be 0 
+            // third is left block boxes
+            const group1 = rest.slice(0, lineRest);
+            const botGroup = rest.slice(lineRest, rest.length);
+
+            const group2 = [];
+            const group3 = [];
+
+            botGroup.forEach((g, i) => {
+                if (i % 4 === 0) {
+                    group2.push(g)  // left vertial
+                } else {
+                    group3.push(g); // bottom rest
+                }
+            })
+
+            // create animate blocks
+            const c1 = createGroup(group1, 'orange', 1)
+            const c2 = createGroup(group2, 'gray', 3)
+            const c3 = createGroup(group3, 'yellow', 2)
+
+            // get fixed position for animate
+            const computeStyle = getComputedStyle(document.getElementsByClassName('box1')[0], null);
+            const margin = parseFloat(computeStyle.marginRight);
+            const width = parseFloat(computeStyle.width);
+            const mw = margin+width;
+            const transfrom1 = `translate(-${mw}px, 0)`
+            const transition1 = 'all 1s ease-in-out';
+
+            // add css transition and transform one by one
+            // one thing becareful is only bind, transition end at last group end
+            c1.length && c1.forEach((dom, i) => { 
+                            dom.style.transition=transition1;
+                            dom.style.transform = transfrom1;
+                            if(i === 0 && c2.length === 0 && c3.length === 0) {
+                                bindEnd(dom, removeDom, rest, [c1, c2, c3]);           
+                            }
+                        });
+                        
+            const height =  parseFloat(computeStyle.height);
+            const marginTop = parseFloat(computeStyle.marginTop);
+            const transfrom2 = `translate(${3 * mw}px, -${height+marginTop}px)`;
+
+            // if first group no item, group2 go now
+            const c2Delay = c1.length > 0 ? 0.5: 0;
+            c2.length && c2.forEach((dom, i) => {
+                            dom.style.transition=`${transition1} ${c2Delay}s`;
+                            dom.style.transform = transfrom2;
+                            if(i === 0 && c3.length === 0) {
+                                bindEnd(dom, removeDom, rest, [c1, c2, c3]);    
+                            }
+                        })
+            const c3Delay = c2Delay + 0.5;
+            c3.length && c3.forEach((dom, i) => { 
+                            dom.style.transition=`${transition1} ${c3Delay}s`;
+                            dom.style.transform = transfrom1
+                            if(i === 0) {
+                                bindEnd(dom, removeDom, rest, [c1, c2, c3]);     
+                            }
+                        });
+
+        }
+
+        // end, remove delete and animate boxes and show change block by opacity 1
+        function bindEnd(endEle, removeDom, rest, animateRest) {
+            endEle.addEventListener('webkitTransitionEnd', () => {
+                divs.splice(divs.indexOf(removeDom), 1)
+                container.removeChild(removeDom);
+                rest.forEach(r => {r.style.opacity = 1})
+                animateRest.forEach((g) => {
+                    g.forEach(c => {
+                        document.body.removeChild(c);
+                    })
+                })
+                window.total--
+            })
+        }
+
+        // create animate box
+        function createGroup(group, color, index) {
+            if(!group.length) return[];
+            const cloneGroups = [];
+            group.forEach((dom) => {
+                const rect1 = dom.getBoundingClientRect();
+                const div = document.createElement('div');
+                div.style.background = color;
+                div.style.position = 'fixed';
+                div.style.height = `${rect1.height}px`;
+                div.style.width = `${rect1.width}px`;
+                div.style.left = `${rect1.left}px`;
+                div.style.top = `${rect1.top}px`;
+                div.style.zIndex = index;
+                document.body.appendChild(div);   
+                cloneGroups.push(div);    
+            })
+            return cloneGroups;
+        }
+
+    </script>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "apple-delete-aminate-demo",
+  "version": "1.0.0",
+  "description": "just for demo apple delete app animate implementation approach",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "anywhere -p 1111"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/vivihoo03/apple-delete-app-animate.git"
+  },
+  "keywords": [
+    "apple",
+    "css",
+    "transition"
+  ],
+  "author": "ken",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vivihoo03/apple-delete-app-animate/issues"
+  },
+  "homepage": "https://github.com/vivihoo03/apple-delete-app-animate#readme",
+  "devDependencies": {
+    "anywhere": "^1.5.0"
+  }
+}
